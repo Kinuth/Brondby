@@ -2,11 +2,10 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from django.utils import timezone
 from authentication.permissions import IsAdmin
-from jobs.models import Job, JobStatus
+from jobs.models import Job
 from jobs.serializers import JobSerializer
-from .models import Invoice, InvoiceStatus
+from .models import Invoice
 from .serializers import InvoiceSerializer
 
 class InvoiceViewSet(viewsets.ModelViewSet):
@@ -30,10 +29,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         POST /api/invoices/{id}/mark_paid/
         """
         invoice = self.get_object()
-        paid_date = request.data.get('paid_date')
-        if not paid_date:
-            paid_date = timezone.now().date()
-        invoice.mark_as_paid(paid_date=paid_date)
+        invoice.mark_as_paid(paid_date=request.data.get('paid_date'))
         serializer = self.get_serializer(invoice)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

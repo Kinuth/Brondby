@@ -1,33 +1,12 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from authentication.models import UserRole
-from jobs.models import Client, ServiceType, Job, JobStatusLog
+from jobs.models import Client, ServiceType, Job
+from jobs.constants import SERVICES
 from billing.models import Invoice
 
 User = get_user_model()
 
-SERVICES = [
-    {
-        "name": "Certified Official Company Documents",
-        "description": "Retrieval, verification, and certification of official registrar documents, certificates of incorporation, CR12s, and shareholder registers across African jurisdictions."
-    },
-    {
-        "name": "Enhanced Due Diligence (EDD)",
-        "description": "Comprehensive investigative background reports, source of wealth analysis, politically exposed persons (PEP) vetting, and ultimate beneficial ownership (UBO) discovery."
-    },
-    {
-        "name": "Legal & Litigation Checks",
-        "description": "Search across commercial courts, appellate registries, regulatory enforcement notices, bankruptcy proceedings, and active arbitrations."
-    },
-    {
-        "name": "Background Checks and Screening Services",
-        "description": "Executive pre-employment screening, credential verification, adverse media intelligence, credit history, and regulatory disciplinary records."
-    },
-    {
-        "name": "Citizenship & Residency Programs",
-        "description": "Verification of residency status, citizenship documentation audits, passport authenticity checks, and immigration compliance vetting."
-    }
-]
 
 class Command(BaseCommand):
     help = "Purge all hypothetical/demo data and prepare the database for real production usage"
@@ -39,14 +18,9 @@ class Command(BaseCommand):
         inv_count = Invoice.objects.all().delete()[0]
         self.stdout.write(f"  [-] Removed {inv_count} invoice records.")
 
-        # 2. Delete JobStatusLogs & Attachments
-        log_count = JobStatusLog.objects.all().delete()[0]
-        att_count = JobAttachment.objects.all().delete()[0]
-        self.stdout.write(f"  [-] Removed {log_count} status log records and {att_count} attachment records.")
-
-        # 3. Delete Jobs
+        # 2. Delete Jobs (cascades automatically to JobStatusLog and JobAttachment)
         job_count = Job.objects.all().delete()[0]
-        self.stdout.write(f"  [-] Removed {job_count} case records.")
+        self.stdout.write(f"  [-] Removed {job_count} case records (and associated logs/attachments).")
 
         # 4. Delete Clients
         client_count = Client.objects.all().delete()[0]

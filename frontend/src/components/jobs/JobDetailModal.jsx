@@ -4,6 +4,7 @@ import { Modal } from '../common/Modal';
 import { StatusBadge } from './StatusBadge';
 import { useAuth } from '../../context/AuthContext';
 import apiClient from '../../api/client';
+import { formatFileSize } from '../../utils/formatters';
 import { 
   Calendar, 
   Building2, 
@@ -46,12 +47,6 @@ export const JobDetailModal = ({ isOpen, onClose, job, onOpenStatusUpdate }) => 
     return <File className="w-5 h-5 text-slate-500" />;
   };
 
-  const formatFileSize = (bytes) => {
-    if (!bytes) return '0 B';
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  };
 
   // Upload attachment directly to this job
   const handleFileUpload = async (e) => {

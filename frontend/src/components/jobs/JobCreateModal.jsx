@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Modal } from '../common/Modal';
 import apiClient from '../../api/client';
+import { formatFileSize } from '../../utils/formatters';
 import { 
   PlusCircle, 
   Loader2, 
@@ -120,12 +121,6 @@ export const JobCreateModal = ({ isOpen, onClose, onSuccess, clients = [], servi
 
   const handleRemoveFile = (index) => {
     setStagedFiles((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const formatFileSize = (bytes) => {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   // Submit Job and Upload Attachments

@@ -116,30 +116,6 @@ class JobViewSet(viewsets.ModelViewSet):
         serializer = JobAttachmentSerializer(attachment, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAssignedWorkerOrAdmin])
-    def update_status(self, request, pk=None):
-        """
-        Dedicated endpoint for updating status with an audit note.
-        POST /api/jobs/{id}/update_status/
-        Payload: { "status": "pending", "note": "Finished field interview" }
-        """
-        job = self.get_object()
-        new_status = request.data.get('status')
-        note = request.data.get('note', '')
-
-        if not new_status:
-            return Response({'status': 'Status field is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Serialize and validate through JobSerializer
-        serializer = self.get_serializer(
-            job,
-            data={'status': new_status, 'status_note': note},
-            partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class JobAttachmentViewSet(viewsets.ModelViewSet):
