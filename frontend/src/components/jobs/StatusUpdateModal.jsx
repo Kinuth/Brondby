@@ -3,7 +3,7 @@ import { Modal } from '../common/Modal';
 import { StatusBadge } from './StatusBadge';
 import { useAuth } from '../../context/AuthContext';
 import apiClient from '../../api/client';
-import { CheckCircle2, AlertCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { AlertCircle, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
 
 export const StatusUpdateModal = ({ isOpen, onClose, job, onSuccess, workers = [] }) => {
   const { isAdmin, isWorker } = useAuth();
@@ -15,7 +15,6 @@ export const StatusUpdateModal = ({ isOpen, onClose, job, onSuccess, workers = [
 
   useEffect(() => {
     if (job) {
-      // Default to logical next status for worker
       if (isWorker) {
         if (job.status === 'assigned') setStatus('pending');
         else if (job.status === 'pending') setStatus('completed');
@@ -53,14 +52,13 @@ export const StatusUpdateModal = ({ isOpen, onClose, job, onSuccess, workers = [
       console.error('Failed to update status:', err);
       const errMsg = err.response?.data?.status?.[0] || 
                      err.response?.data?.detail || 
-                     'Failed to update job status. Please check your permissions.';
+                     'Failed to update job status.';
       setError(errMsg);
     } finally {
       setLoading(false);
     }
   };
 
-  // Determine available statuses based on role
   const getStatusOptions = () => {
     if (isAdmin) {
       return [
@@ -72,10 +70,9 @@ export const StatusUpdateModal = ({ isOpen, onClose, job, onSuccess, workers = [
       ];
     }
 
-    // Worker restricted options (assigned -> pending -> completed)
     if (job.status === 'assigned') {
       return [
-        { value: 'pending', label: 'Move to Pending (Start Work)' }
+        { value: 'pending', label: 'Move to Pending (Start Investigation)' }
       ];
     }
     if (job.status === 'pending') {
@@ -90,23 +87,23 @@ export const StatusUpdateModal = ({ isOpen, onClose, job, onSuccess, workers = [
   const statusOptions = getStatusOptions();
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Update Job #${job.id} Status`} maxWidth="max-w-lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={`Update Case #${job.id} Status`} maxWidth="max-w-lg">
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Status Transition Header */}
-        <div className="p-3.5 rounded-xl bg-slate-800/40 border border-slate-700/60 flex items-center justify-between">
+        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-xs text-slate-400">Current Status</span>
+            <span className="text-xs text-slate-500 font-medium">Current Status</span>
             <div><StatusBadge status={job.status} /></div>
           </div>
-          <ArrowRight className="w-5 h-5 text-slate-500" />
+          <ArrowRight className="w-4 h-4 text-slate-400" />
           <div className="space-y-1">
-            <span className="text-xs text-slate-400">New Target Status</span>
+            <span className="text-xs text-slate-500 font-medium">Target Status</span>
             <div><StatusBadge status={status || job.status} /></div>
           </div>
         </div>
 
         {error && (
-          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-start gap-2.5 text-xs text-rose-300">
+          <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-xs text-rose-700">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -115,13 +112,13 @@ export const StatusUpdateModal = ({ isOpen, onClose, job, onSuccess, workers = [
         {/* Worker Reassignment (Admin Only) */}
         {isAdmin && (
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
-              Assigned Worker
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+              Assigned Investigator
             </label>
             <select
               value={assignedWorker}
               onChange={(e) => setAssignedWorker(e.target.value)}
-              className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               <option value="">-- Unassigned --</option>
               {workers.map((w) => (
@@ -135,18 +132,18 @@ export const StatusUpdateModal = ({ isOpen, onClose, job, onSuccess, workers = [
 
         {/* Status Selector */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
             {isWorker ? 'Advance Status' : 'Change Status'}
           </label>
           {statusOptions.length === 0 ? (
-            <p className="text-xs text-amber-400 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              This job is in <strong>{job.status}</strong> status. No further worker transitions are available.
+            <p className="text-xs text-amber-800 p-2.5 rounded-lg bg-amber-50 border border-amber-200">
+              This case is in <strong>{job.status}</strong> status. No further worker transitions are available.
             </p>
           ) : (
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
               required
             >
               {statusOptions.map((opt) => (
@@ -160,7 +157,7 @@ export const StatusUpdateModal = ({ isOpen, onClose, job, onSuccess, workers = [
 
         {/* Audit / Progress Note */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center justify-between">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
             <span>Audit Trail Progress Note</span>
             <span className="text-[10px] text-slate-400 font-normal">Recorded into immutable history</span>
           </label>
@@ -169,7 +166,7 @@ export const StatusUpdateModal = ({ isOpen, onClose, job, onSuccess, workers = [
             onChange={(e) => setNote(e.target.value)}
             rows="3"
             placeholder={isWorker ? "E.g. Retrieved certificate from registry, contacting notary..." : "E.g. Reassigned to Senior Investigator per client request..."}
-            className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full rounded-lg bg-slate-50 border border-slate-300 px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
@@ -178,14 +175,14 @@ export const StatusUpdateModal = ({ isOpen, onClose, job, onSuccess, workers = [
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white rounded-lg transition"
+            className="px-4 py-2 text-xs font-medium text-slate-500 hover:text-slate-700 rounded-lg transition"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading || statusOptions.length === 0}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-lg shadow-brand-600/30 transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-xs transition"
           >
             {loading ? (
               <>

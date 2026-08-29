@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
 import apiClient from '../../api/client';
-import { Loader2, AlertCircle, Building2, UserPlus, Check } from 'lucide-react';
+import { Loader2, AlertCircle, Check } from 'lucide-react';
 
 export const ClientModal = ({ isOpen, onClose, client, onSuccess }) => {
   const isEditing = Boolean(client?.id);
@@ -73,15 +73,15 @@ export const ClientModal = ({ isOpen, onClose, client, onSuccess }) => {
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-start gap-2.5 text-xs text-rose-300">
+          <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-xs text-rose-700">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
-            Client / Contact Name <span className="text-rose-400">*</span>
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+            Client / Contact Name <span className="text-rose-500">*</span>
           </label>
           <input
             type="text"
@@ -89,28 +89,28 @@ export const ClientModal = ({ isOpen, onClose, client, onSuccess }) => {
             value={formData.name}
             onChange={handleChange}
             required
-            placeholder="E.g. Standard Equity Partners Ltd or Dr. Kofi Mensah"
-            className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            placeholder="Full Name or Primary Contact"
+            className="w-full rounded-lg bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
-            Company / Organization <span className="text-slate-500 font-normal lowercase">(optional for individuals)</span>
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+            Company / Organization <span className="text-slate-400 font-normal lowercase">(optional for individuals)</span>
           </label>
           <input
             type="text"
             name="company_name"
             value={formData.company_name}
             onChange={handleChange}
-            placeholder="E.g. Standard Equity Holding Group"
-            className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            placeholder="E.g. Corporate Entity Name"
+            className="w-full rounded-lg bg-slate-50 border border-slate-300 px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
               Email Address
             </label>
             <input
@@ -118,12 +118,12 @@ export const ClientModal = ({ isOpen, onClose, client, onSuccess }) => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="client@company.africa"
-              className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              placeholder="client@domain.com"
+              className="w-full rounded-lg bg-slate-50 border border-slate-300 px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
               Phone Number
             </label>
             <input
@@ -132,14 +132,14 @@ export const ClientModal = ({ isOpen, onClose, client, onSuccess }) => {
               value={formData.phone}
               onChange={handleChange}
               placeholder="+254 712 345 678"
-              className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg bg-slate-50 border border-slate-300 px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
-            Physical / Registered Address
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+            Registered / Business Address
           </label>
           <textarea
             name="address"
@@ -147,22 +147,22 @@ export const ClientModal = ({ isOpen, onClose, client, onSuccess }) => {
             onChange={handleChange}
             rows="2"
             placeholder="Street address, city, country..."
-            className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full rounded-lg bg-slate-50 border border-slate-300 px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white rounded-lg transition"
+            className="px-4 py-2 text-xs font-medium text-slate-500 hover:text-slate-700 rounded-lg transition"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-lg shadow-brand-600/30 transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-xs transition"
           >
             {loading ? (
               <>

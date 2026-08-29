@@ -90,11 +90,11 @@ Every status transition triggers a Django audit signal capturing:
    ```bash
    python manage.py migrate
    ```
-6. Seed default users, clients, services, jobs, and invoices:
+6. Initialize official investigation services:
    ```bash
-   python manage.py seed_data
+   python manage.py seed_services
    ```
-   *(To seed only the 5 official service types: `python manage.py seed_services`)*
+   *(To create or ensure administrative access: `python manage.py createsuperuser` or initial admin `admin` / `AdminPass123!`)*
 7. Start the Django development server:
    ```bash
    python manage.py runserver 127.0.0.1:8000
@@ -123,21 +123,20 @@ Frontend application will be live at: **`http://localhost:5173/`**
 
 ---
 
-## 4. Demo Login Credentials
+## 4. Production Database Clean / Reset Command
 
-The system includes pre-seeded accounts and one-click quick login buttons on the login screen:
+To purge any existing test records and restore the database to an empty, production-ready state with only the 5 official service types and administrator account:
 
-| Role | Username / Email | Password | Access Level |
-| :--- | :--- | :--- | :--- |
-| **Admin** | `admin` / `admin@brondby.com` | `AdminPass123!` | Full CRUD, Invoices, Clients, Reassignment, All Dashboards |
-| **Worker 1** | `worker1` / `worker1@brondby.com` | `WorkerPass123!` | Investigator (James Mwangi) — sees only assigned jobs |
-| **Worker 2** | `worker2` / `worker2@brondby.com` | `WorkerPass123!` | Investigator (Amina Diallo) — sees only assigned jobs |
+```bash
+cd backend
+python manage.py clean_production_db
+```
 
 ---
 
 ## 5. Docker Compose Setup (PostgreSQL + Backend + Frontend)
 
-To launch the complete stack with a dedicated PostgreSQL database container:
+To launch the complete production stack with a dedicated PostgreSQL database container:
 
 ```bash
 docker-compose up --build
@@ -145,7 +144,7 @@ docker-compose up --build
 
 This starts:
 - **`brondby_postgres`** on port `5432`
-- **`brondby_backend`** on port `8000` (auto-runs migrations and seed data)
+- **`brondby_backend`** on port `8000` (auto-runs migrations and initializes official services)
 - **`brondby_frontend`** on port `5173`
 
 ---

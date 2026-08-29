@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
 import apiClient from '../../api/client';
-import { Loader2, AlertCircle, Receipt, DollarSign, CheckCircle2 } from 'lucide-react';
+import { Loader2, AlertCircle, Receipt } from 'lucide-react';
 
 export const InvoiceCreateModal = ({ isOpen, onClose, onSuccess, preselectedJobId = null }) => {
   const [unbilledJobs, setUnbilledJobs] = useState([]);
@@ -83,7 +83,7 @@ export const InvoiceCreateModal = ({ isOpen, onClose, onSuccess, preselectedJobI
     <Modal isOpen={isOpen} onClose={onClose} title="Generate Client Invoice" maxWidth="max-w-lg">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-start gap-2.5 text-xs text-rose-300">
+          <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-xs text-rose-700">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -91,29 +91,29 @@ export const InvoiceCreateModal = ({ isOpen, onClose, onSuccess, preselectedJobI
 
         {/* Job Selection */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
-            Select Job to Bill <span className="text-rose-400">*</span>
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+            Select Investigation Case to Bill <span className="text-rose-500">*</span>
           </label>
           {fetchingJobs ? (
-            <div className="p-3 rounded-lg bg-slate-800 text-xs text-slate-400 flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin text-brand-400" />
-              Loading available unbilled jobs...
+            <div className="p-3 rounded-lg bg-slate-50 text-xs text-slate-500 flex items-center gap-2 border border-slate-200">
+              <Loader2 className="w-4 h-4 animate-spin text-brand-600" />
+              Loading available unbilled cases...
             </div>
           ) : unbilledJobs.length === 0 ? (
-            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
-              No unbilled jobs found. All existing jobs have already been invoiced or none have been created.
+            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800">
+              No unbilled cases found. All current cases have already been invoiced.
             </div>
           ) : (
             <select
               value={selectedJobId}
               onChange={(e) => setSelectedJobId(e.target.value)}
               required
-              className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg bg-slate-50 border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
-              <option value="">-- Choose Job --</option>
+              <option value="">-- Choose Case --</option>
               {unbilledJobs.map((j) => (
                 <option key={j.id} value={j.id}>
-                  Job #{j.id}: {j.service_type_detail?.name} - {j.client_detail?.name} ({j.status})
+                  Case #{j.id}: {j.service_type_detail?.name} — {j.client_detail?.name} ({j.status})
                 </option>
               ))}
             </select>
@@ -122,18 +122,18 @@ export const InvoiceCreateModal = ({ isOpen, onClose, onSuccess, preselectedJobI
 
         {/* Selected Job Card Preview */}
         {selectedJob && (
-          <div className="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50 text-xs space-y-1 text-slate-300">
-            <div className="font-semibold text-white">Client: {selectedJob.client_detail?.name}</div>
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1 text-slate-600">
+            <div className="font-bold text-slate-900">Client: {selectedJob.client_detail?.name}</div>
             <div>Service: {selectedJob.service_type_detail?.name}</div>
-            <div className="text-slate-400 capitalize">Status: {selectedJob.status}</div>
+            <div className="capitalize font-medium">Status: {selectedJob.status}</div>
           </div>
         )}
 
         {/* Amount & Status */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
-              Invoice Amount (USD) <span className="text-rose-400">*</span>
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+              Invoice Amount (USD) <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-2.5 text-slate-400 font-semibold">$</span>
@@ -145,19 +145,19 @@ export const InvoiceCreateModal = ({ isOpen, onClose, onSuccess, preselectedJobI
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 required
-                className="w-full rounded-lg bg-slate-800 border border-slate-700 pl-8 pr-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full rounded-lg bg-slate-50 border border-slate-300 pl-8 pr-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
               Payment Status
             </label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg bg-slate-50 border border-slate-300 px-3.5 py-2 text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               <option value="unpaid">Unpaid / Issued</option>
               <option value="paid">Already Paid</option>
@@ -167,36 +167,36 @@ export const InvoiceCreateModal = ({ isOpen, onClose, onSuccess, preselectedJobI
 
         {/* Payment Notes */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
             Payment Terms / Invoice Notes
           </label>
           <textarea
             rows="2"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="E.g. Payable within 30 days. Wire transfer to Standard Bank Nairobi Branch."
-            className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            placeholder="Payment instructions, bank wire references, or terms..."
+            className="w-full rounded-lg bg-slate-50 border border-slate-300 px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
         {/* Modal Actions */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white rounded-lg transition"
+            className="px-4 py-2 text-xs font-medium text-slate-500 hover:text-slate-700 rounded-lg transition"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading || !selectedJobId || !amount}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-lg shadow-brand-600/30 transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-xs transition"
           >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Generating Invoice...
+                Issuing Invoice...
               </>
             ) : (
               <>
