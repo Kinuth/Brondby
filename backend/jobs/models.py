@@ -113,3 +113,45 @@ class JobStatusLog(models.Model):
     def __str__(self):
         actor = self.changed_by.username if self.changed_by else "System"
         return f"Job #{self.job_id}: {self.old_status} -> {self.new_status} by {actor}"
+
+
+def job_attachment_upload_path(instance, filename):
+    """
+    Well-organized file storage structure:
+    attachments/job_<id>/YYYY/MM/<filename>
+    """
+    from django.utils import timezone
+    now = timezone.now()
+    return f"attachments/job_{instance.job_id}/{now.strftime('%Y/%m')}/{filename}"
+
+
+class JobAttachment(models.Model):
+    """
+    Structured file attachments (certificates, court records, filings, evidence)
+    linked to investigation cases.
+    """
+    job = models.ForeignKey(
+        Job,
+        on_delete=models.CASCADE,
+        related_name='attachments',
+        db_index=True
+    )
+    file = models.FileField(upload_to=job_attachment_upload_path)
+    file_name = models.CharField(max_length=255)
+    file_size = models.PositiveIntegerField(help_text="File size in bytes")
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='uploaded_attachments'
+    )
+    description = models.CharField(max_length=255, blank=True, help_text="Brief document label or description")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Attachment #{self.id}: {self.file_name} for Job #{self.job_id}"
+

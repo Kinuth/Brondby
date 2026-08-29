@@ -33,10 +33,10 @@ class IsAssignedWorkerOrAdmin(permissions.BasePermission):
             return True
 
         # Workers cannot create new jobs or delete
-        if request.method in ('POST', 'DELETE'):
+        if getattr(view, 'action', None) == 'create' or request.method == 'DELETE':
             return False
 
-        # Workers are allowed safe methods and PATCH/PUT on assigned jobs
+        # Workers are allowed safe methods, PATCH/PUT, and detail POSTs (like upload_attachment) on assigned jobs
         return True
 
     def has_object_permission(self, request, view, obj):

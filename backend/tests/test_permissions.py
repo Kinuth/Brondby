@@ -184,3 +184,32 @@ class RoleBasedAccessControlTests(APITestCase):
             'assigned_worker': self.worker2.id
         })
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_worker_can_upload_attachment_to_assigned_job(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        self.client_drf = self.client_class()
+        self.client_drf.force_authenticate(user=self.worker1)
+
+        test_file = SimpleUploadedFile("id_scan.png", b"fake image bytes", content_type="image/png")
+        res = self.client_drf.post(
+            f'/api/jobs/{self.job_w1.id}/upload_attachment/',
+            {'file': test_file, 'description': 'National ID Scan'},
+            format='multipart'
+        )
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.data['file_name'], 'id_scan.png')
+        self.assertEqual(self.job_w1.attachments.count(), 1)
+
+    def test_worker_cannot_upload_to_unassigned_job(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        self.client_drf = self.client_class()
+        self.client_drf.force_authenticate(user=self.worker1)
+
+        # worker1 tries to upload to worker2's job
+        test_file = SimpleUploadedFile("id_scan.png", b"fake image bytes", content_type="image/png")
+        res = self.client_drf.post(
+            f'/api/jobs/{self.job_w2.id}/upload_attachment/',
+            {'file': test_file, 'description': 'Illegal upload'},
+            format='multipart'
+        )
+        self.assertIn(res.status_code, [status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND])

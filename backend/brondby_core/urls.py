@@ -13,6 +13,7 @@ from jobs.views import (
     ServiceTypeViewSet,
     JobViewSet,
     JobStatusLogViewSet,
+    JobAttachmentViewSet,
     DashboardStatsView,
 )
 from billing.views import InvoiceViewSet
@@ -23,7 +24,11 @@ router.register(r'clients', ClientViewSet, basename='client')
 router.register(r'services', ServiceTypeViewSet, basename='service')
 router.register(r'jobs', JobViewSet, basename='job')
 router.register(r'status-logs', JobStatusLogViewSet, basename='status-log')
+router.register(r'attachments', JobAttachmentViewSet, basename='attachment')
 router.register(r'invoices', InvoiceViewSet, basename='invoice')
+
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -39,3 +44,7 @@ urlpatterns = [
     # REST APIs
     path('api/', include(router.urls)),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

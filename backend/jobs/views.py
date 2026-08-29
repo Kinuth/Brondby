@@ -2,6 +2,7 @@ from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count, Sum, Q
 from django.utils import timezone
@@ -9,12 +10,13 @@ from datetime import timedelta
 from authentication.permissions import IsAdmin, IsAssignedWorkerOrAdmin
 from authentication.models import UserRole
 from billing.models import Invoice, InvoiceStatus
-from .models import Client, ServiceType, Job, JobStatus, JobStatusLog
+from .models import Client, ServiceType, Job, JobStatus, JobStatusLog, JobAttachment
 from .serializers import (
     ClientSerializer,
     ServiceTypeSerializer,
     JobSerializer,
     JobStatusLogSerializer,
+    JobAttachmentSerializer,
 )
 
 class ClientViewSet(viewsets.ModelViewSet):
@@ -87,7 +89,32 @@ class JobViewSet(viewsets.ModelViewSet):
         if due_before:
             queryset = queryset.filter(due_date__lte=due_before)
 
-        return queryset.select_related('client', 'service_type', 'assigned_worker', 'created_by').prefetch_related('status_logs')
+        return queryset.select_related('client', 'service_type', 'assigned_worker', 'created_by').prefetch_related('status_logs', 'attachments')
+
+    @action(detail=True, methods=['post'], parser_classes=[MultiPartParser, FormParser], permission_classes=[IsAssignedWorkerOrAdmin])
+    def upload_attachment(self, request, pk=None):
+        """
+        Upload file attachment to an investigation case:
+        POST /api/jobs/{id}/upload_attachment/
+        multipart/form-data: file, description (optional)
+        """
+        job = self.get_object()
+        file_obj = request.FILES.get('file')
+        if not file_obj:
+            return Response({'file': 'No file was submitted.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        description = request.data.get('description', '')
+        attachment = JobAttachment.objects.create(
+            job=job,
+            file=file_obj,
+            file_name=file_obj.name,
+            file_size=file_obj.size,
+            uploaded_by=request.user,
+            description=description
+        )
+
+        serializer = JobAttachmentSerializer(attachment, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAssignedWorkerOrAdmin])
     def update_status(self, request, pk=None):
@@ -113,6 +140,35 @@ class JobViewSet(viewsets.ModelViewSet):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class JobAttachmentViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for individual task/case attachments.
+    - Admins have full access.
+    - Workers can view and download attachments for their assigned cases.
+    """
+    serializer_class = JobAttachmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return JobAttachment.objects.none()
+
+        if user.role == UserRole.ADMIN or user.is_superuser:
+            return JobAttachment.objects.all().select_related('job', 'uploaded_by')
+
+        return JobAttachment.objects.filter(job__assigned_worker=user).select_related('job', 'uploaded_by')
+
+    def perform_create(self, serializer):
+        file_obj = self.request.FILES.get('file')
+        serializer.save(
+            uploaded_by=self.request.user,
+            file_name=file_obj.name if file_obj else 'document',
+            file_size=file_obj.size if file_obj else 0
+        )
 
 
 class JobStatusLogViewSet(viewsets.ReadOnlyModelViewSet):

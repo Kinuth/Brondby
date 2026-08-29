@@ -39,9 +39,10 @@ class Command(BaseCommand):
         inv_count = Invoice.objects.all().delete()[0]
         self.stdout.write(f"  [-] Removed {inv_count} invoice records.")
 
-        # 2. Delete JobStatusLogs
+        # 2. Delete JobStatusLogs & Attachments
         log_count = JobStatusLog.objects.all().delete()[0]
-        self.stdout.write(f"  [-] Removed {log_count} status log records.")
+        att_count = JobAttachment.objects.all().delete()[0]
+        self.stdout.write(f"  [-] Removed {log_count} status log records and {att_count} attachment records.")
 
         # 3. Delete Jobs
         job_count = Job.objects.all().delete()[0]

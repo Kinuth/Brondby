@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from authentication.serializers import UserSerializer
-from .models import Client, ServiceType, Job, JobStatus, JobStatusLog
+from .models import Client, ServiceType, Job, JobStatus, JobStatusLog, JobAttachment
 
 User = get_user_model()
 
@@ -28,6 +28,40 @@ class ServiceTypeSerializer(serializers.ModelSerializer):
         model = ServiceType
         fields = ['id', 'name', 'description', 'is_active']
         read_only_fields = ['id']
+
+
+class JobAttachmentSerializer(serializers.ModelSerializer):
+    uploaded_by_name = serializers.SerializerMethodField()
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = JobAttachment
+        fields = [
+            'id',
+            'job',
+            'file',
+            'file_url',
+            'file_name',
+            'file_size',
+            'uploaded_by',
+            'uploaded_by_name',
+            'description',
+            'created_at',
+        ]
+        read_only_fields = ['id', 'file_size', 'file_name', 'uploaded_by', 'created_at']
+
+    def get_uploaded_by_name(self, obj) -> str:
+        if obj.uploaded_by:
+            return obj.uploaded_by.get_full_name() or obj.uploaded_by.username
+        return "System"
+
+    def get_file_url(self, obj) -> str:
+        if obj.file:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.file.url)
+            return obj.file.url
+        return ""
 
 
 class JobStatusLogSerializer(serializers.ModelSerializer):
@@ -60,6 +94,7 @@ class JobSerializer(serializers.ModelSerializer):
     created_by_detail = UserSerializer(source='created_by', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     status_logs = JobStatusLogSerializer(many=True, read_only=True)
+    attachments = JobAttachmentSerializer(many=True, read_only=True)
     status_note = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
@@ -82,9 +117,10 @@ class JobSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'status_logs',
+            'attachments',
             'status_note',
         ]
-        read_only_fields = ['id', 'created_by', 'created_at', 'updated_at', 'status_logs']
+        read_only_fields = ['id', 'created_by', 'created_at', 'updated_at', 'status_logs', 'attachments']
 
     def validate(self, attrs):
         request = self.context.get('request')

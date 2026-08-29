@@ -88,3 +88,31 @@ class ModelAndAuditSignalTests(TestCase):
         invoice.refresh_from_db()
         self.assertEqual(invoice.status, InvoiceStatus.PAID)
         self.assertIsNotNone(invoice.paid_date)
+
+    def test_job_attachment_creation_and_path(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from jobs.models import JobAttachment
+
+        job = Job.objects.create(
+            client=self.client,
+            service_type=self.service,
+            assigned_worker=self.worker,
+            status=JobStatus.ASSIGNED,
+            created_by=self.admin
+        )
+
+        test_file = SimpleUploadedFile("court_record.pdf", b"sample content for testing", content_type="application/pdf")
+        attachment = JobAttachment.objects.create(
+            job=job,
+            file=test_file,
+            file_name="court_record.pdf",
+            file_size=len(b"sample content for testing"),
+            uploaded_by=self.worker,
+            description="Certified Court Filing"
+        )
+
+        self.assertIn(f"attachments/job_{job.id}/", attachment.file.name)
+        self.assertEqual(attachment.file_name, "court_record.pdf")
+        self.assertEqual(attachment.description, "Certified Court Filing")
+        self.assertEqual(attachment.uploaded_by, self.worker)
+        self.assertEqual(job.attachments.count(), 1)
